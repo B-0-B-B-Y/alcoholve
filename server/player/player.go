@@ -1,5 +1,6 @@
 package player
 
+// Player : Player data object
 type Player struct {
 	PlayerID string `json:"playerId" binding:"required"`
 	GameID   string `json:"gameId"`
