@@ -12,10 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// NewGameJson : Input parameters when a client makes a new game request
 type NewGameJson struct {
-	PlayerNames []string `json:"playerNames" binding:"required"`
-	Threshold   int32    `json:"threshold"`
-	Alcohol     string   `json:"alcohol"`
+	PlayerNames        []string `json:"playerNames" binding:"required"`
+	Threshold          int32    `json:"threshold"`
+	Alcohol            string   `json:"alcohol"`
+	QuestionAmount     string   `json:"questionAmount"`
+	QuestionCategory   string   `json:"questionCategory"`
+	QuestionDifficulty string   `json:"questionDifficulty"`
 }
 
 // NewGame : Create a new game instance
@@ -41,6 +45,12 @@ func NewGame(c *gin.Context) {
 
 		playerList = append(playerList, playerData)
 	}
+	gameData.Questions = game.GetQuestions(
+		gameData.OpenTDBToken,
+		inputJSON.QuestionAmount,
+		inputJSON.QuestionCategory,
+		inputJSON.QuestionDifficulty,
+	)
 	gameData.PlayerList = playerList
 	gameData.PlayerCount = int8(playerCount)
 

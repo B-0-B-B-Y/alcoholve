@@ -1,6 +1,8 @@
 package redisClient
 
 import (
+	"os"
+
 	"github.com/go-redis/redis/v8"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -9,7 +11,7 @@ import (
 func New() *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "", // TODO : Change redis docker container to use the pass stored in .env
-		DB:       0,  // use default DB
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
 	})
 }
