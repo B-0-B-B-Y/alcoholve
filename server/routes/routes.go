@@ -22,6 +22,12 @@ type NewGameJson struct {
 	QuestionDifficulty string   `json:"questionDifficulty"`
 }
 
+// JoinJson : Input parameters when a client makes a join game request
+type JoinJson struct {
+	GameID     string `json:"gameId" binding:"required"`
+	PlayerName string `json:"playerName" binding:"required"`
+}
+
 // NewGame : Create a new game instance
 func NewGame(c *gin.Context) {
 	var inputJSON NewGameJson
@@ -65,14 +71,41 @@ func NewGame(c *gin.Context) {
 	// Store the newly created game and its state in redis
 	gameDataJSON, err := json.Marshal(gameData)
 	if err != nil {
-		log.Panic("Failed to marshal game data.")
+		log.Printf("Failed to marshal game data. Reason %s", err)
+		c.AbortWithStatusJSON(500, gin.H{
+			"error": err,
+		})
+		return
 	}
 	err = rdb.Set(context.Background(), gameData.GameID, gameDataJSON, 8.64e+13).Err()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		c.AbortWithStatusJSON(500, gin.H{
+			"error": err,
+		})
+		return
 	}
 
 	c.JSON(200, gin.H{
-		"game": gameData,
+		"gameId": gameData.GameID,
 	})
+}
+
+// Join : Allow a client to join a specific game via GameID
+func Join(c *gin.Context) {
+	var inputJSON JoinJson
+
+	c.BindJSON(&inputJSON)
+	err := redisClient.AddPlayerToGame(inputJSON.GameID, inputJSON.PlayerName)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatusJSON(500, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	player.PlayerWebsocketHandler(c.Writer, c.Request)
+
+	c.Status(200)
 }

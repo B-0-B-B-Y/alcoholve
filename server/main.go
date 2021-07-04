@@ -8,14 +8,18 @@ import (
 func main() {
 	router := gin.Default()
 
+	// POST /new - Return a new game object
+	router.POST("/new", routes.NewGame)
+
+	// POST /join - Allow a client to join a game
+	router.POST("/join", routes.Join)
+
+	// GET /ping - Default fallback route to verify server is up
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-
-	// POST /new - Return a new game object
-	router.POST("/new", routes.NewGame)
 
 	router.Run()
 }
